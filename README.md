@@ -44,15 +44,23 @@
 
 ### 步骤 2: 上传文件
 
-将以下文件上传到仓库根目录：
+将以下文件和目录上传到仓库根目录：
 
 ```
-index.html              # 主网站文件
-.nojekyll              # 告诉 GitHub 不要使用 Jekyll
-README.md              # 本说明文件
-wasm-compiler/
-  └── wasm-compiler.js # C 语言解释器
+c-learning/
+├── index.html              # 主网站文件
+├── .nojekyll              # 告诉 GitHub 不要使用 Jekyll
+├── README.md              # 本说明文件
+└── clang/                 # C++ 编译器资源文件（必须）
+    ├── bin/
+    │   ├── clang.wasm.gz
+    │   ├── lld.wasm.gz
+    │   ├── memfs.wasm.gz
+    │   └── sysroot.tar.gz
+    └── runtime-manifest.v1.json
 ```
+
+**重要：** `clang/` 目录包含 C++ 编译器所需的资源文件（约 28 MB），必须完整上传。
 
 ### 步骤 3: 启用 GitHub Pages
 
@@ -87,11 +95,12 @@ https://你的用户名.github.io/仓库名/
 - 无需外部资源，file:// 和 https:// 都可以使用
 
 ### C++ 编译器
-- 使用 @live-codes/cpp-wasm（Clang WebAssembly）
-- 从 CDN 加载（https://cdn.jsdelivr.net/npm/@live-codes/cpp-wasm）
+- 使用 @live-codes/clang-wasm（Clang 22 WebAssembly 编译器）
+- 从 CDN 加载 JS 入口文件
+- 编译器资源文件（clang.wasm.gz、lld.wasm.gz 等）需要从网站加载
+- 支持完整的 C++17 标准库
 - **必须在 HTTPS 环境下使用**
-- 首次加载需要 20-30 秒
-- 后续加载会使用浏览器缓存
+- 首次加载需要下载约 28 MB 的资源文件
 
 ## 浏览器兼容性
 

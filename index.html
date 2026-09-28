@@ -4767,31 +4767,35 @@ int main() {
             statusSpan.className = 'compiler-status loading';
             
             try {
-                // 使用 @live-codes/cpp-wasm
+                // 使用 @live-codes/clang-wasm
                 // 这是一个完整的 Clang C++ 编译器，支持 STL（vector, string 等）
-                const cppWasmUrl = 'https://cdn.jsdelivr.net/npm/@live-codes/cpp-wasm@1.0.0/dist/index.js';
+                const clangWasmUrl = 'https://cdn.jsdelivr.net/npm/@live-codes/clang-wasm@0.3.0/dist/clang-wasm.global.js';
                 
                 // 动态加载编译器
                 await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
-                    script.src = cppWasmUrl;
+                    script.src = clangWasmUrl;
                     script.onload = resolve;
                     script.onerror = () => reject(new Error('无法加载C++编译器，请检查网络连接'));
                     document.head.appendChild(script);
                     
                     // 超时检查
                     setTimeout(() => {
-                        if (!window.createCppCompiler) {
+                        if (!window.createCompiler) {
                             reject(new Error('C++编译器加载超时'));
                         }
                     }, 30000);
                 });
                 
                 // 初始化编译器
-                if (window.createCppCompiler) {
-                    cppCompiler = await window.createCppCompiler({
-                        // 使用 C++17 标准
-                        std: 'c++17'
+                if (window.createCompiler) {
+                    // 计算正确的 baseUrl
+                    // 对于 GitHub Pages 项目站点，需要使用完整路径
+                    const baseUrl = new URL('./clang/', window.location.href);
+                    
+                    cppCompiler = await window.createCompiler('cpp', {
+                        baseUrl: baseUrl,
+                        std: 'gnu++17'
                     });
                     
                     statusSpan.textContent = '● C++就绪';
@@ -4806,7 +4810,7 @@ int main() {
                 
                 // 显示详细错误信息
                 const errorMsg = error.message || '未知错误';
-                alert(`C++编译器加载失败：${errorMsg}\n\n请确保：\n1. 网站已部署到 HTTPS 服务器\n2. 网络连接正常\n3. 浏览器支持 WebAssembly`);
+                alert(`C++编译器加载失败：${errorMsg}\n\n请确保：\n1. 网站已部署到 HTTPS 服务器\n2. 网络连接正常\n3. 浏览器支持 WebAssembly\n4. clang/ 目录已正确部署`);
             } finally {
                 cppCompilerLoading = false;
             }
@@ -4824,17 +4828,13 @@ int main() {
             }
             
             try {
-                // 编译代码
-                const result = await cppCompiler.compile(code, {
-                    stdin: stdin || '',
-                    language: 'c++17',
-                    useSTL: true
-                });
+                // 使用 compiler.run() 方法编译并运行代码
+                const result = await cppCompiler.run(code, stdin || '');
                 
                 return {
                     success: result.exitCode === 0,
                     stage: result.exitCode === 0 ? 'run' : 'compile',
-                    output: result.stdout || '',
+                    output: result.output || '',
                     error: result.stderr || '',
                     exitCode: result.exitCode
                 };
