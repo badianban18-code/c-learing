@@ -4781,19 +4781,19 @@ int main() {
                     
                     // 超时检查
                     setTimeout(() => {
-                        if (!window.createCompiler) {
+                        if (!window.clangWasm || !window.clangWasm.createCompiler) {
                             reject(new Error('C++编译器加载超时'));
                         }
                     }, 30000);
                 });
                 
                 // 初始化编译器
-                if (window.createCompiler) {
+                if (window.clangWasm && window.clangWasm.createCompiler) {
                     // 计算正确的 baseUrl
                     // 对于 GitHub Pages 项目站点，需要使用完整路径
                     const baseUrl = new URL('./clang/', window.location.href);
                     
-                    cppCompiler = await window.createCompiler('cpp', {
+                    cppCompiler = await window.clangWasm.createCompiler('cpp', {
                         baseUrl: baseUrl,
                         std: 'gnu++17'
                     });
